@@ -8,7 +8,28 @@ window.onload = function () {
     var rejectPercent = 50;  // rejecting sensitivity
     var vibration = 0;  //rejecting vibration [0-3]
     var maxDotRadius = 10; //maximum size of the dots
+    var gradientChecked = false;  //activates gradient on dots
     var dots = [];
+    //var dateOld,dateNew;
+    
+    window.requestAnimFrame = (function () {
+            return window.requestAnimationFrame ||
+                   window.webkitRequestAnimationFrame ||
+                   window.mozRequestAnimationFrame ||
+                   window.oRequestAnimationFrame ||
+                   window.msRequestAnimationFrame ||
+                   function (callback) {
+                        window.setTimeout(callback, 1000 / 60);
+                   };
+    })();
+
+    //initialize menu text
+    document.getElementById("gradient").checked = gradientChecked;
+
+    document.getElementById("gradient").onclick = function(){ 
+        gradientChecked = document.getElementById("gradient").checked;
+    };
+    
 
     //Dot class
     function Dot() {
@@ -44,27 +65,67 @@ window.onload = function () {
         dots[i] = new Dot();
     }
 
-    theCanvas.onmouseout = function (event) {
-        mouse.active = false;
-        //console.log(mouse.x + "   " + mouse.y + "   " + mouse.active);
+    //adding mouse/touch events
+    if (!(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent))) {
+        //mouse events
+        theCanvas.onmouseout = function (event) {
+            mouse.active = false;
+            //console.log(mouse.x + "   " + mouse.y + "   " + mouse.active);
+        }
+
+        theCanvas.onmousemove = function (event) {
+            if (event.hasOwnProperty("offsetX")) {
+                mouse.x = event.offsetX;
+                mouse.y = event.offsetY;
+            } else {
+                mouse.x = event.layerX - event.currentTarget.offsetLeft;
+                mouse.y = event.layerY - event.currentTarget.offsetTop;
+            }
+            //console.log(mouse.x + "   " + mouse.y + "   " + mouse.active);
+        };
+
+        theCanvas.onmouseover = function (event) {
+            mouse.active = true;
+            //console.log(mouse.x + "   " + mouse.y + "   " + mouse.active);
+        }
+    } else { // mobile events
+        gradientChecked = false;
+        document.getElementById("gradient").checked = gradientChecked;
+
+        theCanvas.addEventListener('touchend', function (event) {
+            mouse.active = false;
+            //document.getElementById("debug").innerHTML = "TOUCHEND";
+        }, false);
+
+        theCanvas.addEventListener('touchmove', function (event) {
+                var touchobj = event.changedTouches[0]
+                mouse.x = touchobj.clientX - event.currentTarget.offsetLeft;
+                mouse.y = touchobj.clientY - event.currentTarget.offsetTop;
+                //document.getElementById("debug").innerHTML = "TOUCHMOVE";
+                //console.log(touchobj.offsetX + "   " + mouse.y + "   " + mouse.active);
+        }, false);
+
+        theCanvas.addEventListener('touchstart', function (event) {
+            mouse.active = true;
+            var touchobj = event.changedTouches[0]
+            mouse.x = touchobj.clientX - event.currentTarget.offsetLeft;
+            mouse.y = touchobj.clientY - event.currentTarget.offsetTop;
+            //document.getElementById("debug").innerHTML = "TOUCHSTART";
+        }, false);
     }
 
-    theCanvas.onmousemove = function (event) {
-        mouse.x = event.offsetX;
-        mouse.y = event.offsetY;
-        //console.log(mouse.x + "   " + mouse.y + "   " + mouse.active);
-    };
-
-    theCanvas.onmouseover = function (event) {
-        mouse.active = true;
-        //console.log(mouse.x + "   " + mouse.y + "   " + mouse.active);
-    }
-
-
+   
     //start animation
     animate();
     function animate() {
+        requestAnimFrame(animate);
+        render();
+    };
 
+   
+    function render() {
+        //dateOld = Date.now();
+        
         //update
         for (var i = 0; i < initialDots; i++) {
             if ((dots[i].y + dots[i].radius > theCanvas.height) || (dots[i].y < 0 + dots[i].radius)) dots[i].ySpeed *= -1;
@@ -97,7 +158,8 @@ window.onload = function () {
         }
         
         //clear
-        ctx.clearRect(0, 0, theCanvas.width, theCanvas.height);
+        ctx.fillStyle = "white";
+        ctx.fillRect(0, 0, theCanvas.width, theCanvas.height);
 
         //draw
         var gradX, grady, gradient;
@@ -110,25 +172,21 @@ window.onload = function () {
                 gradient = ctx.createRadialGradient(gradX, gradY, dots[i].radius / 20, dots[i].newX, dots[i].newY, dots[i].radius * 1.2);
                 //ctx.fillStyle = "black";
                 //ctx.fillText(Math.floor(dots[i].dist * 100 / mouseMaxDist), dots[i].newX, dots[i].newY, 10);
-                
             } else {
                 ctx.arc(dots[i].x, dots[i].y, dots[i].radius, 0, 2 * Math.PI, false);
                 gradX = dots[i].x - (Math.pow(dots[i].radius/4,2)) * (2 * dots[i].x / theCanvas.width - 1);
                 gradY = dots[i].y - (Math.pow(dots[i].radius/4,2)) * (2 * dots[i].y / theCanvas.height - 1);
                 gradient = ctx.createRadialGradient(gradX, gradY, dots[i].radius / 20, dots[i].x, dots[i].y, dots[i].radius * 1.2);
             }
-
            
-            
             gradient.addColorStop(0, "#fff");
-            gradient.addColorStop(0.99, dots[i].color);
-            ctx.fillStyle = gradient;
-                //dots[i].color;
+            gradient.addColorStop(1, dots[i].color);
 
+            if (gradientChecked) ctx.fillStyle = gradient;
+            else ctx.fillStyle = dots[i].color;
+            //dots[i].color;
             ctx.fill();
-            
         }
-
         ////draw mouse arc stroke
         //if (mouse.active === true){
         //    ctx.beginPath();
@@ -137,8 +195,8 @@ window.onload = function () {
         //}
 
         //restart
-        window.requestAnimationFrame(animate);
-    }
 
+        //dateNew = Date.now();
+    } //end render();
    
 };
