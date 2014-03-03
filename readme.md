@@ -1,7 +1,7 @@
 CanvasDots
 ==========
 
-# Canvas Animation and Mouse interactivity
+##Canvas Animation and Mouse interactivity
 
 
 ![ScreenShot](canvasDots.jpg)
