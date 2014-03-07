@@ -69,11 +69,13 @@ window.onload = function () {
     if (!(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent))) {
         //mouse events
         theCanvas.onmouseout = function (event) {
+            event.preventDefault();
             mouse.active = false;
             //console.log(mouse.x + "   " + mouse.y + "   " + mouse.active);
         }
 
         theCanvas.onmousemove = function (event) {
+            event.preventDefault();
             if (event.hasOwnProperty("offsetX")) {
                 mouse.x = event.offsetX;
                 mouse.y = event.offsetY;
@@ -85,6 +87,7 @@ window.onload = function () {
         };
 
         theCanvas.onmouseover = function (event) {
+            event.preventDefault();
             mouse.active = true;
             //console.log(mouse.x + "   " + mouse.y + "   " + mouse.active);
         }
@@ -93,11 +96,13 @@ window.onload = function () {
         document.getElementById("gradient").checked = gradientChecked;
 
         theCanvas.addEventListener('touchend', function (event) {
+            event.preventDefault();
             mouse.active = false;
             //document.getElementById("debug").innerHTML = "TOUCHEND";
         }, false);
 
         theCanvas.addEventListener('touchmove', function (event) {
+                event.preventDefault();
                 var touchobj = event.changedTouches[0]
                 mouse.x = touchobj.clientX - event.currentTarget.offsetLeft;
                 mouse.y = touchobj.clientY - event.currentTarget.offsetTop;
@@ -106,6 +111,7 @@ window.onload = function () {
         }, false);
 
         theCanvas.addEventListener('touchstart', function (event) {
+            event.preventDefault();
             mouse.active = true;
             var touchobj = event.changedTouches[0]
             mouse.x = touchobj.clientX - event.currentTarget.offsetLeft;
